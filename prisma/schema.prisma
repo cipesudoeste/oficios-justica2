@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum HearingStatus {
+  RECEBIDA
+  TRIAGEM
+  AGUARDANDO_PROVIDENCIA
+  OFICIO_GERADO
+  ENCAMINHADA
+  POLICIAL_NOTIFICADO
+  CONCLUIDA
+  ARQUIVADA
+}
+
+enum HearingModality {
+  PRESENCIAL
+  VIRTUAL
+}
+
+enum CommunicationType {
+  EMAIL
+  WHATSAPP
+  RESUMO
+}
+
+enum DocumentType {
+  OFICIO_APRESENTACAO
+  OFICIO_JUSTIFICATIVA
+  RESUMO_ADMINISTRATIVO
+}
+
+model Hearing {
+  id                  String              @id @default(cuid())
+  processNumber       String
+  seiProcessNumber    String?
+  officerName         String
+  officerRegistration String
+  officerRank         String
+  unit                String
+  district            String
+  court               String
+  hearingType         String
+  hearingDate         DateTime
+  hearingTime         String
+  modality            HearingModality
+  location            String?
+  meetingLink         String?
+  notes               String?
+  internalDeadline    DateTime?
+  status              HearingStatus       @default(RECEBIDA)
+  generatedDocuments  GeneratedDocument[]
+  communications      Communication[]
+  auditLogs           AuditLog[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([status])
+  @@index([officerName])
+  @@index([unit])
+  @@index([district])
+  @@index([processNumber])
+}
+
+model GeneratedDocument {
+  id        String       @id @default(cuid())
+  hearingId String
+  type      DocumentType
+  title     String
+  content   String       @db.Text
+  createdAt DateTime     @default(now())
+  hearing   Hearing      @relation(fields: [hearingId], references: [id], onDelete: Cascade)
+
+  @@index([hearingId])
+}
+
+model Communication {
+  id        String            @id @default(cuid())
+  hearingId String
+  type      CommunicationType
+  recipient String?
+  content   String            @db.Text
+  createdAt DateTime          @default(now())
+  hearing   Hearing           @relation(fields: [hearingId], references: [id], onDelete: Cascade)
+
+  @@index([hearingId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  hearingId String
+  action    String
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+  hearing   Hearing  @relation(fields: [hearingId], references: [id], onDelete: Cascade)
+
+  @@index([hearingId])
+}
