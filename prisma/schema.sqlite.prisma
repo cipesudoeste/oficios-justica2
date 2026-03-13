@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Versão SQLite para desenvolvimento local rápido.
+// Replique o mesmo modelo em produção no schema.prisma principal.
+
+model Hearing {
+  id                  String   @id @default(cuid())
+  processNumber       String
+  seiProcessNumber    String?
+  officerName         String
+  officerRegistration String
+  officerRank         String
+  unit                String
+  district            String
+  court               String
+  hearingType         String
+  hearingDate         DateTime
+  hearingTime         String
+  modality            String
+  location            String?
+  meetingLink         String?
+  notes               String?
+  internalDeadline    DateTime?
+  status              String   @default("RECEBIDA")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
